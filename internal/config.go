@@ -7,10 +7,10 @@ import (
 )
 
 type Config struct {
-	MongoDirectory string
-	MVMDirectory   string
-	Verbose        bool
-	Writer         io.Writer
+	SymlinkPath  string
+	MVMDirectory string
+	Verbose      bool
+	Writer       io.Writer
 }
 
 func (c *Config) Validate() error {
@@ -22,13 +22,13 @@ func (c *Config) Validate() error {
 		c.MVMDirectory = mvm
 	}
 
-	if c.MongoDirectory != "" {
-		md, err := filepath.Abs(c.MongoDirectory)
+	if c.SymlinkPath != "" {
+		p, err := filepath.Abs(c.SymlinkPath)
 		if err != nil {
 			return err
 		}
 
-		c.MongoDirectory = md
+		c.SymlinkPath = p
 	}
 
 	return nil
@@ -43,12 +43,12 @@ func (c *Config) dataDir() string {
 }
 
 func (c *Config) currentVersionPath() string {
-	_, err := os.Stat(c.MongoDirectory)
+	_, err := os.Stat(c.SymlinkPath)
 	if err != nil {
 		return ""
 	}
 
-	md, err := filepath.EvalSymlinks(c.MongoDirectory)
+	md, err := filepath.EvalSymlinks(c.SymlinkPath)
 	if err != nil {
 		return ""
 	}

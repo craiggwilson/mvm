@@ -10,10 +10,10 @@ import (
 )
 
 var (
-	app            = kingpin.New("mvm", "A MongoDB version manager.")
-	verbose        = app.Flag("verbose", "write verbose output").Short('v').Bool()
-	mongoDirectory = app.Flag("mongo-directory", "the directory to use in the path for MongoDB").Hidden().Envar("MONGODB").String()
-	mvmDirectory   = app.Flag("mvm-directory", "the directory mvm places its resources").Hidden().Envar("MVM").String()
+	app          = kingpin.New("mvm", "A MongoDB version manager.")
+	verbose      = app.Flag("verbose", "write verbose output").Short('v').Bool()
+	symlinkPath  = app.Flag("symlink-path", "the symlink path for the active version").Hidden().Envar(internal.MVMCurrentEnvVarName).String()
+	mvmDirectory = app.Flag("mvm-directory", "the directory mvm places its resources").Hidden().Envar(internal.MVMEnvVarName).String()
 
 	env = app.Command("env", "lists the current environment as it pertains to MVM")
 
@@ -28,10 +28,10 @@ func main() {
 	cmdName := kingpin.MustParse(app.Parse(os.Args[1:]))
 
 	cfg := &internal.Config{
-		MongoDirectory: *mongoDirectory,
-		MVMDirectory:   *mvmDirectory,
-		Verbose:        *verbose,
-		Writer:         os.Stdout,
+		SymlinkPath:  *symlinkPath,
+		MVMDirectory: *mvmDirectory,
+		Verbose:      *verbose,
+		Writer:       os.Stdout,
 	}
 
 	err := cfg.Validate()
