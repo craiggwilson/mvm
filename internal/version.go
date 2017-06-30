@@ -240,12 +240,7 @@ func (c *RootCmd) installedVersions() (versions, error) {
 	return versions, nil
 }
 
-func (c *RootCmd) selectVersion(target string) (*version, error) {
-	versions, err := c.installedVersions()
-	if err != nil {
-		return nil, err
-	}
-
+func (c *RootCmd) selectVersion(versions versions, target string) (*version, error) {
 	var selected *version
 	for _, v := range versions {
 		if strings.HasPrefix(v.Version.String(), target) {

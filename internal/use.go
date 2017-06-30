@@ -10,7 +10,12 @@ type UseCmd struct {
 
 func (c *UseCmd) Execute() error {
 
-	selected, err := c.selectVersion(c.Version)
+	versions, err := c.installedVersions()
+	if err != nil {
+		return err
+	}
+
+	selected, err := c.selectVersion(versions, c.Version)
 	if err != nil {
 		return err
 	}

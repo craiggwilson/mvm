@@ -23,7 +23,12 @@ func (c *RunCmd) Execute() error {
 	args := c.Args
 
 	if len(args) > 0 {
-		selected, err = c.selectVersion(args[0])
+		versions, err := c.installedVersions()
+		if err != nil {
+			return err
+		}
+
+		selected, err = c.selectVersion(versions, args[0])
 		if err == nil {
 			args = args[1:]
 		}

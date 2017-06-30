@@ -21,16 +21,21 @@ var (
 
 	env = app.Command("env", "lists the current environment as it pertains to MVM")
 
-	list                 = app.Command("list", "list versions of mongodb")
-	listAvailable        = list.Flag("available", "include the versions available").Short('a').Default("false").Bool()
-	listDevelopment      = list.Flag("development", "include available development versions").Short('d').Default("false").Bool()
-	listReleaseCandidate = list.Flag("releaseCandidates", "include available release candidates").Short('r').Default("false").Bool()
+	install                  = app.Command("install", "install an available version")
+	installVersion           = install.Arg("version", "the version to install").String()
+	installDevelopment       = install.Flag("development", "include available development versions").Short('d').Default("false").Bool()
+	installReleaseCandidates = install.Flag("releaseCandidates", "include available release candidates").Short('r').Default("false").Bool()
+
+	list                  = app.Command("list", "list versions of mongodb")
+	listAvailable         = list.Flag("available", "include the versions available").Short('a').Default("false").Bool()
+	listDevelopment       = list.Flag("development", "include available development versions").Short('d').Default("false").Bool()
+	listReleaseCandidates = list.Flag("releaseCandidates", "include available release candidates").Short('r').Default("false").Bool()
 
 	run       = app.Command("run", "run mongodb binary")
 	runBinary = run.Arg("binary", "the binary to run").Required().String()
 	runArgs   = run.Arg("args", "remaining args").Strings()
 
-	use        = app.Command("use", "use a specific version of mongodb")
+	use        = app.Command("use", "use a specific version")
 	useVersion = use.Arg("version", "the version to use").Required().String()
 )
 
@@ -62,12 +67,19 @@ func main() {
 		cmd = &internal.EnvCmd{
 			RootCmd: root,
 		}
+	case install.FullCommand():
+		cmd = &internal.InstallCmd{
+			RootCmd:           root,
+			Version:           *installVersion,
+			Development:       *installDevelopment,
+			ReleaseCandidates: *installReleaseCandidates,
+		}
 	case list.FullCommand():
 		cmd = &internal.ListCmd{
 			RootCmd:           root,
 			Available:         *listAvailable,
 			Development:       *listDevelopment,
-			ReleaseCandidates: *listReleaseCandidate,
+			ReleaseCandidates: *listReleaseCandidates,
 		}
 	case run.FullCommand():
 		cmd = &internal.RunCmd{
