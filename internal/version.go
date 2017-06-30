@@ -117,8 +117,7 @@ func (c *RootCmd) availableVersions(dev bool, rc bool) (versions, error) {
 	var body []byte
 	if updateVersionFile {
 		c.verbosef("downloading available versions file")
-		client := http.DefaultClient
-		resp, err := client.Get(fullVersionsURI)
+		resp, err := http.Get(fullVersionsURI)
 		if err != nil {
 			return nil, err
 		}
