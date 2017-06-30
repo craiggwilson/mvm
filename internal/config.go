@@ -7,6 +7,7 @@ import (
 )
 
 type Config struct {
+	DataTemplate string
 	SymlinkPath  string
 	MVMDirectory string
 	Verbose      bool
@@ -34,15 +35,7 @@ func (c *Config) Validate() error {
 	return nil
 }
 
-func (c *Config) versionsDir() string {
-	return filepath.Join(c.MVMDirectory, "versions")
-}
-
-func (c *Config) dataDir() string {
-	return filepath.Join(c.MVMDirectory, "data")
-}
-
-func (c *Config) currentVersionPath() string {
+func (c *Config) activeVersionPath() string {
 	_, err := os.Stat(c.SymlinkPath)
 	if err != nil {
 		return ""
@@ -54,4 +47,12 @@ func (c *Config) currentVersionPath() string {
 	}
 
 	return md
+}
+
+func (c *Config) dataDir() string {
+	return filepath.Join(c.MVMDirectory, "data")
+}
+
+func (c *Config) versionsDir() string {
+	return filepath.Join(c.MVMDirectory, "versions")
 }

@@ -9,9 +9,9 @@ import (
 func ExecuteEnv(cfg *EnvConfig) error {
 
 	writef(cfg.Config, "set %s=%s", MVMEnvVarName, cfg.MVMDirectory)
-	writef(cfg.Config, "set %s=%s", MVMCurrentEnvVarName, cfg.SymlinkPath)
+	writef(cfg.Config, "set %s=%s", MVMActiveEnvVarName, cfg.SymlinkPath)
 
-	component := filepath.Clean(filepath.Join(cfg.SymlinkPath, "bin"))
+	component := filepath.Join(cfg.SymlinkPath)
 	path := os.Getenv("Path")
 	pathParts := strings.Split(path, string(os.PathListSeparator))
 

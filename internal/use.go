@@ -1,28 +1,12 @@
 package internal
 
-import (
-	"fmt"
-	"os"
-	"strings"
-)
+import "os"
 
 func ExecuteUse(cfg *UseConfig) error {
-	versions, err := installedVersions(cfg.Config)
+
+	selected, err := selectVersion(cfg.Config, cfg.Version)
 	if err != nil {
 		return err
-	}
-
-	var selected *version
-	for _, v := range versions {
-		if strings.HasPrefix(v.Name, cfg.Version) {
-			verbosef(cfg.Config, "using version '%s'", v.Name)
-			selected = v
-			break
-		}
-	}
-
-	if selected == nil {
-		return fmt.Errorf("no installed versions match '%s'", cfg.Version)
 	}
 
 	// remove symlink if it exists

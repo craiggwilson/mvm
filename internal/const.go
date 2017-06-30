@@ -1,6 +1,8 @@
 package internal
 
 const (
-	MVMEnvVarName        = "MVM"
-	MVMCurrentEnvVarName = "MVM_CURRENT"
+	MVMEnvVarName             = "MVM"
+	MVMActiveEnvVarName       = "MVM_ACTIVE"
+	MVMDataTemplateEnvVarName = "MVM_DATA_TEMPLATE"
+	MVMDataTemplateDefault    = "db${port}"
 )

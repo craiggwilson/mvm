@@ -16,7 +16,7 @@ func ExecuteList(cfg *ListConfig) error {
 	write(cfg.Config, "")
 	for _, v := range versions {
 		s := ""
-		if v.Current {
+		if v.Active {
 			s += "o"
 		} else {
 			s += " "
