@@ -2,25 +2,25 @@ package internal
 
 import "fmt"
 
-func verbosef(cfg *Config, format string, args ...interface{}) {
-	if !cfg.Verbose {
+func (c *RootCmd) verbosef(format string, args ...interface{}) {
+	if !c.Verbose {
 		return
 	}
-	verbose(cfg, fmt.Sprintf(format, args...))
+	c.verbose(fmt.Sprintf(format, args...))
 }
 
-func verbose(cfg *Config, msg string) {
-	if !cfg.Verbose {
+func (c *RootCmd) verbose(msg string) {
+	if !c.Verbose {
 		return
 	}
 
-	fmt.Fprintln(cfg.Writer, "[verbose] "+msg)
+	fmt.Fprintln(c.Writer, "[verbose] "+msg)
 }
 
-func writef(cfg *Config, format string, args ...interface{}) {
-	write(cfg, fmt.Sprintf(format, args...))
+func (c *RootCmd) writef(format string, args ...interface{}) {
+	c.write(fmt.Sprintf(format, args...))
 }
 
-func write(cfg *Config, msg string) {
-	fmt.Fprintln(cfg.Writer, msg)
+func (c *RootCmd) write(msg string) {
+	fmt.Fprintln(c.Writer, msg)
 }

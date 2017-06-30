@@ -11,16 +11,20 @@ import (
 )
 
 var (
-	app          = kingpin.New("mvm", "A MongoDB version manager.")
-	verbose      = app.Flag("verbose", "write verbose output").Short('v').Bool()
-	mvmDirectory = app.Flag("mvm-directory", "the directory mvm places its resources").Hidden().Default(filepath.Join(os.Getenv("PROGRAMDATA"), "mvm")).Envar(internal.MVMEnvVarName).String()
-	symlinkPath  = app.Flag("symlink-path", "the symlink path for the active version").Hidden().Default(filepath.Join(os.Getenv(internal.MVMEnvVarName), "active")).Envar(internal.MVMActiveEnvVarName).String()
-	dataTemplate = app.Flag("data-template", "the data template for constructing a data directory").Hidden().Default(internal.MVMDataTemplateDefault).Envar(internal.MVMDataTemplateEnvVarName).String()
+	app     = kingpin.New("mvm", "A MongoDB version manager.")
+	verbose = app.Flag("verbose", "write verbose output").Short('v').Bool()
+
+	activePath   = app.Flag("activePath", "the symlink path for the active version").Hidden().Default(filepath.Join(os.Getenv("PROGRAMDATA"), "mvm", "active")).Envar(internal.MVMActiveEnvVarName).String()
+	dataPath     = app.Flag("dataPath", "the path to store data").Hidden().Default(filepath.Join(os.Getenv("PROGRAMDATA"), "mvm", "data")).Envar(internal.MVMDataEnvVarName).String()
+	dataTemplate = app.Flag("dataTemplate", "the data template for constructing a data directory").Hidden().Default(internal.MVMDataTemplateDefault).Envar(internal.MVMDataTemplateEnvVarName).String()
+	versionsPath = app.Flag("versionsPath", "the path to store versions").Hidden().Default(filepath.Join(os.Getenv("PROGRAMDATA"), "mvm", "versions")).Envar(internal.MVMVersionsEnvVarName).String()
 
 	env = app.Command("env", "lists the current environment as it pertains to MVM")
 
-	list    = app.Command("list", "list versions of mongodb")
-	listAll = list.Flag("all", "list all the versions available").Default("false").Bool()
+	list                 = app.Command("list", "list versions of mongodb")
+	listAvailable        = list.Flag("available", "include the versions available").Short('a').Default("false").Bool()
+	listDevelopment      = list.Flag("development", "include available development versions").Short('d').Default("false").Bool()
+	listReleaseCandidate = list.Flag("releaseCandidates", "include available release candidates").Short('r').Default("false").Bool()
 
 	run       = app.Command("run", "run mongodb binary")
 	runBinary = run.Arg("binary", "the binary to run").Required().String()
@@ -30,45 +34,55 @@ var (
 	useVersion = use.Arg("version", "the version to use").Required().String()
 )
 
+type cmd interface {
+	Execute() error
+}
+
 func main() {
 	cmdName := kingpin.MustParse(app.Parse(os.Args[1:]))
 
-	cfg := &internal.Config{
+	root := &internal.RootCmd{
 		DataTemplate: *dataTemplate,
-		SymlinkPath:  *symlinkPath,
-		MVMDirectory: *mvmDirectory,
+		ActivePath:   *activePath,
+		DataPath:     *dataPath,
+		VersionsPath: *versionsPath,
 		Verbose:      *verbose,
 		Writer:       os.Stdout,
 	}
 
-	err := cfg.Validate()
+	err := root.Validate()
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
+	var cmd cmd
 	switch cmdName {
 	case env.FullCommand():
-		err = internal.ExecuteEnv(&internal.EnvConfig{
-			Config: cfg,
-		})
+		cmd = &internal.EnvCmd{
+			RootCmd: root,
+		}
 	case list.FullCommand():
-		err = internal.ExecuteList(&internal.ListConfig{
-			Config: cfg,
-			All:    *listAll,
-		})
+		cmd = &internal.ListCmd{
+			RootCmd:           root,
+			Available:         *listAvailable,
+			Development:       *listDevelopment,
+			ReleaseCandidates: *listReleaseCandidate,
+		}
 	case run.FullCommand():
-		err = internal.ExecuteRun(&internal.RunConfig{
-			Config: cfg,
-			Binary: *runBinary,
-			Args:   *runArgs,
-		})
+		cmd = &internal.RunCmd{
+			RootCmd: root,
+			Binary:  *runBinary,
+			Args:    *runArgs,
+		}
 	case use.FullCommand():
-		err = internal.ExecuteUse(&internal.UseConfig{
-			Config:  cfg,
+		cmd = &internal.UseCmd{
+			RootCmd: root,
 			Version: *useVersion,
-		})
+		}
 	}
+
+	err = cmd.Execute()
 
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)

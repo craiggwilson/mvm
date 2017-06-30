@@ -6,12 +6,18 @@ import (
 	"strings"
 )
 
-func ExecuteEnv(cfg *EnvConfig) error {
+type EnvCmd struct {
+	*RootCmd
+}
 
-	writef(cfg.Config, "set %s=%s", MVMEnvVarName, cfg.MVMDirectory)
-	writef(cfg.Config, "set %s=%s", MVMActiveEnvVarName, cfg.SymlinkPath)
+func (c *EnvCmd) Execute() error {
 
-	component := filepath.Join(cfg.SymlinkPath)
+	c.writef("%s=%s", MVMActiveEnvVarName, c.ActivePath)
+	c.writef("%s=%s", MVMDataEnvVarName, c.DataPath)
+	c.writef("%s=%s", MVMDataTemplateEnvVarName, c.DataTemplate)
+	c.writef("%s=%s", MVMVersionsEnvVarName, c.VersionsPath)
+
+	component := c.ActivePath
 	path := os.Getenv("Path")
 	pathParts := strings.Split(path, string(os.PathListSeparator))
 
@@ -24,12 +30,9 @@ func ExecuteEnv(cfg *EnvConfig) error {
 		}
 	}
 	if !found {
-		writef(cfg.Config, "path is missing '%s'", component)
+		c.write("")
+		c.writef("Add '%s' to your PATH in order to get versioned binaries.", component)
 	}
 
 	return nil
-}
-
-type EnvConfig struct {
-	*Config
 }

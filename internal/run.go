@@ -8,30 +8,38 @@ import (
 	"strings"
 )
 
-func ExecuteRun(cfg *RunConfig) error {
+type RunCmd struct {
+	*RootCmd
+
+	Version string
+	Binary  string
+	Args    []string
+}
+
+func (c *RunCmd) Execute() error {
 
 	var err error
 	var selected *version
-	args := cfg.Args
+	args := c.Args
 
 	if len(args) > 0 {
-		selected, err = selectVersion(cfg.Config, args[0])
+		selected, err = c.selectVersion(args[0])
 		if err == nil {
 			args = args[1:]
 		}
 	}
 
 	if selected == nil {
-		selected, err = activeVersion(cfg.Config)
+		selected, err = c.activeVersion()
 		if err != nil {
 			return err
 		}
 	}
 
-	switch cfg.Binary {
+	switch c.Binary {
 	case "mongod":
 		port := "27017"
-		portIdx := findArg(args, "--port")
+		portIdx := stringsIndex(args, "--port")
 		if portIdx != -1 {
 			if portIdx+1 > len(args) {
 				return fmt.Errorf("--port has no value")
@@ -40,7 +48,7 @@ func ExecuteRun(cfg *RunConfig) error {
 			port = args[portIdx+1]
 		}
 		var dbpath string
-		dbpathIdx := findArg(args, "--dbpath")
+		dbpathIdx := stringsIndex(args, "--dbpath")
 		if dbpathIdx != -1 {
 			if dbpathIdx+1 > len(args) {
 				return fmt.Errorf("--dbpath has no value")
@@ -48,14 +56,14 @@ func ExecuteRun(cfg *RunConfig) error {
 
 			dbpath = args[dbpathIdx+1]
 		} else {
-			dbpath = filepath.Join(cfg.dataDir(), strings.Replace(cfg.DataTemplate, "${port}", port, -1))
+			dbpath = filepath.Join(c.DataPath, strings.Replace(c.DataTemplate, "${port}", port, -1))
 			args = append(args, "--dbpath", dbpath)
-			verbosef(cfg.Config, "--dbpath did not exist, using '%s'", dbpath)
+			c.verbosef("--dbpath did not exist, using '%s'", dbpath)
 		}
 
 		_, err := os.Stat(dbpath)
 		if err != nil && os.IsNotExist(err) {
-			verbosef(cfg.Config, "creating dbpath '%s'", dbpath)
+			c.verbosef("creating dbpath '%s'", dbpath)
 			err = os.MkdirAll(dbpath, os.ModeDir)
 		}
 		if err != nil {
@@ -63,23 +71,11 @@ func ExecuteRun(cfg *RunConfig) error {
 		}
 	}
 
-	cmd := exec.Command(filepath.Join(selected.URI, cfg.Binary), args...)
+	cmd := exec.Command(filepath.Join(selected.URI, c.Binary), args...)
 
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
 
 	return cmd.Run()
-}
-
-type RunConfig struct {
-	*Config
-
-	Version string
-	Binary  string
-	Args    []string
-}
-
-func findArg(args []string, target string) int {
-	return stringsIndex(args, target)
 }

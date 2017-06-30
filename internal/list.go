@@ -1,19 +1,28 @@
 package internal
 
-import "sort"
+type ListCmd struct {
+	*RootCmd
 
-func ExecuteList(cfg *ListConfig) error {
+	Available         bool
+	Development       bool
+	ReleaseCandidates bool
+}
 
-	versions, err := installedVersions(cfg.Config)
+func (c *ListCmd) Execute() error {
+
+	var versions versions
+	var err error
+	if c.Available {
+		versions, err = c.allVersions(c.Development, c.ReleaseCandidates)
+	} else {
+		versions, err = c.installedVersions()
+	}
+
 	if err != nil {
 		return err
 	}
-	if cfg.All {
-		// append(versions, availableVersions...)
-		sort.Sort(versions)
-	}
 
-	write(cfg.Config, "")
+	c.write("")
 	for _, v := range versions {
 		s := ""
 		if v.Active {
@@ -22,6 +31,8 @@ func ExecuteList(cfg *ListConfig) error {
 			s += " "
 		}
 
+		s += " "
+
 		if v.Installed {
 			s += "+"
 		} else {
@@ -29,17 +40,11 @@ func ExecuteList(cfg *ListConfig) error {
 		}
 
 		s += " "
-		s += v.Name
+		s += v.Version.String()
 		s += " (" + v.URI + ")"
 
-		write(cfg.Config, s)
+		c.write(s)
 	}
 
 	return nil
-}
-
-type ListConfig struct {
-	*Config
-
-	All bool
 }
