@@ -35,6 +35,9 @@ var (
 	runBinary = run.Arg("binary", "the binary to run").Required().String()
 	runArgs   = run.Arg("args", "remaining args").Strings()
 
+	uninstall        = app.Command("uninstall", "uninstall a version")
+	uninstallVersion = uninstall.Arg("version", "the version to uninstall").String()
+
 	use        = app.Command("use", "use a specific version")
 	useVersion = use.Arg("version", "the version to use").Required().String()
 )
@@ -86,6 +89,11 @@ func main() {
 			RootCmd: root,
 			Binary:  *runBinary,
 			Args:    *runArgs,
+		}
+	case uninstall.FullCommand():
+		cmd = &internal.UninstallCmd{
+			RootCmd: root,
+			Version: *uninstallVersion,
 		}
 	case use.FullCommand():
 		cmd = &internal.UseCmd{
