@@ -1,9 +1,15 @@
 package internal
 
 import (
+	"crypto/sha256"
 	"io"
 	"os"
 	"path/filepath"
+	"time"
+
+	"encoding/hex"
+
+	"github.com/cavaliercoder/grab"
 )
 
 type RootCmd struct {
@@ -44,6 +50,41 @@ func (c *RootCmd) Validate() error {
 	}
 
 	return nil
+}
+
+func (c *RootCmd) download(checksum, source, dest string) (string, error) {
+	client := grab.NewClient()
+	req, err := grab.NewRequest(dest, source)
+	if err != nil {
+		return "", err
+	}
+
+	if checksum != "" {
+		cs, err := hex.DecodeString(checksum)
+		if err != nil {
+			return "", err
+		}
+		req.SetChecksum(sha256.New(), cs, true)
+	}
+
+	resp := client.Do(req)
+
+	t := time.NewTicker(time.Second)
+	defer t.Stop()
+
+	c.writef("downloading '%s'", source)
+	for {
+		select {
+		case <-t.C:
+			c.writef("  %f%% complete", resp.Progress()*100)
+		case <-resp.Done:
+			if err := resp.Err(); err != nil {
+				return "", err
+			}
+
+			return resp.Filename, nil
+		}
+	}
 }
 
 func (c *RootCmd) evalActivePath() string {

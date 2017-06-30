@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -96,45 +95,26 @@ func (c *RootCmd) allVersions(dev, rc bool) (versions, error) {
 }
 
 func (c *RootCmd) availableVersions(dev bool, rc bool) (versions, error) {
-	c.verbosef("hitting '%s' for available versions", fullVersionsURI)
-
 	versionFile := filepath.Join(os.TempDir(), versionsTempFileName)
 
-	updateVersionFile := false
 	fi, err := os.Stat(versionFile)
-	if err != nil && os.IsNotExist(err) {
-		c.verbosef("cached available versions file does not exist")
-		updateVersionFile = true
-	} else if err != nil {
+	if err != nil && !os.IsNotExist(err) {
 		return nil, err
-	} else {
+	} else if err == nil {
 		if fi.ModTime().Add(24 * time.Hour).Before(time.Now()) {
 			c.verbosef("found cached available versions file, but it is older than 24 hours")
-			updateVersionFile = true
+			os.Remove(versionFile)
 		}
 	}
 
-	var body []byte
-	if updateVersionFile {
-		c.verbosef("downloading available versions file")
-		resp, err := http.Get(fullVersionsURI)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
+	_, err = c.download("", fullVersionsURI, versionFile)
+	if err != nil {
+		return nil, err
+	}
 
-		body, err = ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-
-		ioutil.WriteFile(versionFile, body, os.ModePerm)
-	} else {
-		c.verbosef("reading cached available versions file")
-		body, err = ioutil.ReadFile(versionFile)
-		if err != nil {
-			return nil, err
-		}
+	body, err := ioutil.ReadFile(versionFile)
+	if err != nil {
+		return nil, err
 	}
 
 	root := &struct {
