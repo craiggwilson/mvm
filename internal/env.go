@@ -12,6 +12,7 @@ type EnvCmd struct {
 
 func (c *EnvCmd) Execute() error {
 
+	c.writef("%s=%s", MVMEnvVarName, os.Getenv(MVMEnvVarName))
 	c.writef("%s=%s", MVMActiveEnvVarName, c.ActivePath)
 	c.writef("%s=%s", MVMDataEnvVarName, c.DataPath)
 	c.writef("%s=%s", MVMDataTemplateEnvVarName, c.DataTemplate)
