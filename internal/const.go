@@ -9,4 +9,6 @@ const (
 	MVMVersionsEnvVarName     = "MVM_VERSIONS"
 
 	fullVersionsURI = "https://downloads.mongodb.org/full.json"
+
+	versionsTempFileName = "mvm_available_versions.json"
 )
