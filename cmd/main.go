@@ -26,10 +26,10 @@ var (
 	installDevelopment       = install.Flag("development", "include available development versions").Short('d').Default("false").Bool()
 	installReleaseCandidates = install.Flag("releaseCandidates", "include available release candidates").Short('r').Default("false").Bool()
 
-	list                  = app.Command("list", "list versions of mongodb")
-	listAvailable         = list.Flag("available", "include the versions available").Short('a').Default("false").Bool()
+	list                  = app.Command("list", "list versions")
 	listDevelopment       = list.Flag("development", "include available development versions").Short('d').Default("false").Bool()
-	listReleaseCandidates = list.Flag("releaseCandidates", "include available release candidates").Short('r').Default("false").Bool()
+	listReleaseCandidates = list.Flag("releaseCandidates", "include available release candidates").Short('c').Default("false").Bool()
+	listRemote            = list.Flag("remote", "include remote versions").Short('r').Default("false").Bool()
 
 	run       = app.Command("run", "run mongodb binary")
 	runBinary = run.Arg("binary", "the binary to run").Required().String()
@@ -43,6 +43,7 @@ var (
 )
 
 func mvmDir(name string) string {
+
 	mvm := os.Getenv(internal.MVMEnvVarName)
 	if mvm == "" {
 		mvm = filepath.Join(os.Getenv("PROGRAMDATA"), "mvm")
@@ -89,9 +90,9 @@ func main() {
 	case list.FullCommand():
 		cmd = &internal.ListCmd{
 			RootCmd:           root,
-			Available:         *listAvailable,
 			Development:       *listDevelopment,
 			ReleaseCandidates: *listReleaseCandidates,
+			Remote:            *listRemote,
 		}
 	case run.FullCommand():
 		cmd = &internal.RunCmd{

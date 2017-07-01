@@ -3,16 +3,16 @@ package internal
 type ListCmd struct {
 	*RootCmd
 
-	Available         bool
 	Development       bool
 	ReleaseCandidates bool
+	Remote            bool
 }
 
 func (c *ListCmd) Execute() error {
 
 	var versions versions
 	var err error
-	if c.Available {
+	if c.Remote {
 		versions, err = c.allVersions(c.Development, c.ReleaseCandidates)
 	} else {
 		versions, err = c.installedVersions()
