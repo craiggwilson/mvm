@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"fmt"
 	"os"
 	"strings"
 )
@@ -22,7 +23,7 @@ func (c *InstallCmd) Execute() error {
 
 	var selected *version
 	for _, v := range versions {
-		if strings.HasPrefix(v.Version.String(), c.Version) && v.Installed {
+		if v.Installed && strings.HasPrefix(v.Version.String(), c.Version) {
 			selected = v
 			break
 		}
@@ -30,6 +31,10 @@ func (c *InstallCmd) Execute() error {
 		if selected == nil && strings.HasPrefix(v.Version.String(), c.Version) {
 			selected = v
 		}
+	}
+
+	if selected == nil {
+		return fmt.Errorf("no version matches '%s'", c.Version)
 	}
 
 	if selected.Installed {
