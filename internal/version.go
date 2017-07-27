@@ -179,12 +179,12 @@ func (c *RootCmd) availableVersions(dev bool, rc bool) (versions, error) {
 func (c *RootCmd) installedVersions() (versions, error) {
 	c.verbosef("getting installed versions from '%s'", c.VersionsPath)
 
-	matches, err := filepath.Glob(filepath.Join(c.VersionsPath, "*-?.?.?"))
+	matches, err := filepath.Glob(filepath.Join(c.VersionsPath, "*-*.*.*"))
 	if err != nil {
 		return nil, err
 	}
 
-	rgx := regexp.MustCompile("\\d\\.\\d\\.\\d.*")
+	rgx := regexp.MustCompile("\\d+\\.\\d+\\.\\d+.*")
 
 	activePath := c.evalActivePath()
 	activeFile, _ := os.Stat(activePath)
