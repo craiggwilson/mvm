@@ -1,0 +1,9 @@
+*.sh eol=lf
+*.go eol=lf
+*.json eol=lf
+*.txt eol=lf
+*.csv eol=lf
+*.avro eol=lf
+*.tsv eol=lf
+go.mod eol=lf
+go.sum eol=lf
