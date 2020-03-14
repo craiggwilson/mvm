@@ -4,16 +4,10 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"log"
-	"os"
 	"time"
 
 	"github.com/cavaliercoder/grab"
 )
-
-// Download downloads a version to a temp directory.
-func Download(v *Version) (string, error) {
-	return download(v.SHA256, v.URI, os.TempDir())
-}
 
 func download(checksum, source, dest string) (string, error) {
 	log.Printf("[verbose] downloading %q to %q\n", source, dest)

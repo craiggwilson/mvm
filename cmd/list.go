@@ -48,12 +48,12 @@ func List(opts ListOptions) error {
 	var versions []*version.Version
 	var err error
 	if opts.Remote {
-		versions, err = version.All(opts.Config(), version.RemoteOptions{
+		versions, err = version.ListAll(opts.Config(), version.ListAllOptions{
 			Development:       opts.Development,
 			ReleaseCandidates: opts.ReleaseCandidates,
 		})
 	} else {
-		versions, err = version.Installed(opts.Config())
+		versions, err = version.ListInstalled(opts.Config())
 	}
 	if err != nil {
 		return err

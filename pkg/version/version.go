@@ -1,6 +1,7 @@
 package version
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,6 +11,9 @@ import (
 
 	"github.com/blang/semver"
 )
+
+// ErrNoVersionsMatch is raised when no versions were matched.
+var ErrNoVersionsMatch = errors.New("no versions match")
 
 var versionRegex = regexp.MustCompile(`\d+\.\d+\.\d+.*`)
 
@@ -45,7 +49,7 @@ func Match(versions []*Version, fuzzy string) (*Version, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("no versions match %q", fuzzy)
+	return nil, ErrNoVersionsMatch
 }
 
 // Version represents a version of MongoDB.

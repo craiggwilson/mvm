@@ -2,6 +2,8 @@ package version
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -13,20 +15,118 @@ import (
 	"github.com/craiggwilson/mvm/pkg/config"
 )
 
-const (
-	defaultEdition       = "enterprise"
-	fullVersionsURI      = "https://downloads.mongodb.org/full.json"
-	versionsTempFileName = "mvm_available_versions"
-)
-
-type RemoteOptions struct {
+type ListAllOptions struct {
 	OperatingSystem   string
 	Edition           string
 	Development       bool
 	ReleaseCandidates bool
 }
 
-func Remote(cfg *config.Config, opts RemoteOptions) ([]*Version, error) {
+// ListAll gets all the versions, either installed or remote.
+func ListAll(cfg *config.Config, opts ListAllOptions) ([]*Version, error) {
+	installedVersions, err := ListInstalled(cfg)
+	if err != nil {
+		return nil, err
+	}
+	remoteVersions, err := ListRemote(cfg, ListRemoteOptions{
+		OperatingSystem:   opts.OperatingSystem,
+		Edition:           opts.Edition,
+		Development:       opts.Development,
+		ReleaseCandidates: opts.ReleaseCandidates,
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	var versions []*Version
+	i := 0
+	j := 0
+	for {
+		if i < len(installedVersions) && j < len(remoteVersions) {
+			iv, jv := installedVersions[i], remoteVersions[j]
+			if iv.Version.EQ(jv.Version) {
+				versions = append(versions, iv)
+				i++
+				j++
+			} else if iv.Version.GT(jv.Version) {
+				versions = append(versions, iv)
+				i++
+			} else {
+				versions = append(versions, jv)
+				j++
+			}
+
+			continue
+		}
+
+		if i < len(installedVersions) {
+			versions = append(versions, installedVersions[i:]...)
+		} else if j < len(remoteVersions) {
+			versions = append(versions, remoteVersions[j:]...)
+		}
+
+		break
+	}
+
+	return versions, nil
+}
+
+func ListInstalled(cfg *config.Config) ([]*Version, error) {
+	log.Printf("[verbose] getting installed versions from %q\n", cfg.InstallPath())
+	matches, err := filepath.Glob(filepath.Join(cfg.InstallPath(), "*-*.*.*"))
+	if err != nil {
+		return nil, err
+	}
+
+	activeVersion, err := Active(cfg)
+	if err != nil && !errors.Is(err, ErrNoActiveVersion) {
+		return nil, fmt.Errorf("failed getting active version: %w", err)
+	}
+
+	var versions []*Version
+	for _, m := range matches {
+		fi, err := os.Stat(m)
+		if err != nil {
+			return nil, err
+		}
+
+		if !fi.IsDir() {
+			continue
+		}
+
+		v, err := FromPath(m)
+		if err != nil {
+			log.Printf("[info] skipping %q: %v\n", fi.Name(), err)
+			continue
+		}
+
+		if v.URI == activeVersion.URI {
+			v.Active = true
+		}
+
+		versions = append(versions, v)
+	}
+
+	Sort(versions)
+
+	return versions, nil
+}
+
+const (
+	defaultEdition       = "enterprise"
+	fullVersionsURI      = "https://downloads.mongodb.org/full.json"
+	versionsTempFileName = "mvm_available_versions"
+)
+
+type ListRemoteOptions struct {
+	OperatingSystem   string
+	Edition           string
+	Development       bool
+	ReleaseCandidates bool
+}
+
+func ListRemote(cfg *config.Config, opts ListRemoteOptions) ([]*Version, error) {
 	if opts.Edition == "" {
 		opts.Edition = defaultEdition
 	}

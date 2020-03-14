@@ -57,7 +57,7 @@ func Run(opts RunOptions) error {
 	args := opts.Args
 	var matched *version.Version
 	if len(args) > 0 {
-		versions, err := version.Installed(opts.Config())
+		versions, err := version.ListInstalled(opts.Config())
 		if err != nil {
 			return err
 		}

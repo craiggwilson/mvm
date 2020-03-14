@@ -2,9 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
-	"os"
-	"path/filepath"
 
 	"github.com/craiggwilson/mvm/pkg/version"
 	"github.com/spf13/cobra"
@@ -37,7 +34,7 @@ type UninstallOptions struct {
 
 // Select a mongodb version.
 func Uninstall(opts UninstallOptions) error {
-	versions, err := version.Installed(opts.Config())
+	versions, err := version.ListInstalled(opts.Config())
 	if err != nil {
 		return err
 	}
@@ -52,10 +49,5 @@ func Uninstall(opts UninstallOptions) error {
 		return fmt.Errorf("version '%s' is not installed", opts.Version)
 	}
 
-	// selected.URI includes the bin folder... need to move one up
-	parent := filepath.Dir(matched.URI)
-
-	log.Printf("[info] removing %q\n", parent)
-
-	return os.RemoveAll(parent)
+	return version.Uninstall(opts.Config(), matched)
 }

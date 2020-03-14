@@ -39,7 +39,7 @@ type DataCleanOptions struct {
 
 // Cleans a mongodb data directory.
 func Clean(opts DataCleanOptions) error {
-	versions, err := version.Installed(opts.Config())
+	versions, err := version.ListInstalled(opts.Config())
 	if err != nil {
 		return err
 	}
