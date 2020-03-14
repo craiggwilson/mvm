@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -8,28 +9,28 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cleanOpts = CleanOptions{
+var dataCleanOpts = DataCleanOptions{
 	RootOptions: rootOpts,
 }
 
 func init() {
-	cleanCmd.Flags().StringVar(&cleanOpts.Port, "port", "", "the port")
+	dataCleanCmd.Flags().StringVar(&dataCleanOpts.Port, "port", "", "the port")
 
-	rootCmd.AddCommand(cleanCmd)
+	dataCmd.AddCommand(dataCleanCmd)
 }
 
-var cleanCmd = &cobra.Command{
+var dataCleanCmd = &cobra.Command{
 	Use:   "clean <version>",
 	Short: "Cleans the data directory for a particular version and optionally a particular port.",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(_ *cobra.Command, args []string) error {
-		cleanOpts.Version = args[0]
-		return Clean(cleanOpts)
+		dataCleanOpts.Version = args[0]
+		return Clean(dataCleanOpts)
 	},
 }
 
-// CleanOptions are the options for cleaning a data directory.
-type CleanOptions struct {
+// DataCleanOptions are the options for cleaning a data directory.
+type DataCleanOptions struct {
 	RootOptions
 
 	Version string
@@ -37,7 +38,7 @@ type CleanOptions struct {
 }
 
 // Cleans a mongodb data directory.
-func Clean(opts CleanOptions) error {
+func Clean(opts DataCleanOptions) error {
 	versions, err := version.Installed(opts.Config())
 	if err != nil {
 		return err
@@ -46,6 +47,10 @@ func Clean(opts CleanOptions) error {
 	matched, err := version.Match(versions, opts.Version)
 	if err != nil {
 		return err
+	}
+
+	if matched.Version.String() != opts.Version {
+		return fmt.Errorf("data for version '%s' does not exist", opts.Version)
 	}
 
 	dataPath := opts.Config().DataPath(matched.Version.String(), opts.Port)

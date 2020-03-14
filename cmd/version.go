@@ -21,8 +21,6 @@ var versionOpts = VersionOptions{
 }
 
 func init() {
-	versionCmd.Flags().StringVar(&cleanOpts.Port, "port", "", "the port")
-
 	rootCmd.AddCommand(versionCmd)
 }
 
