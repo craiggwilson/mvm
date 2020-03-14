@@ -28,7 +28,7 @@ var cleanCmd = &cobra.Command{
 	},
 }
 
-// SelectOptions are the options for selecting a mongodb version.
+// CleanOptions are the options for cleaning a data directory.
 type CleanOptions struct {
 	RootOptions
 

@@ -18,7 +18,7 @@
 *.out
 
 # artifacts
-artifacts
+dist
 
 # Local database used for integration tests
 testdata/db

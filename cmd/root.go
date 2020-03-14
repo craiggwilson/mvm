@@ -3,6 +3,7 @@ package cmd
 import (
 	"log"
 	"os"
+	"path/filepath"
 
 	"github.com/craiggwilson/mvm/pkg/config"
 	"github.com/spf13/cobra"
@@ -30,7 +31,17 @@ type RootOptions struct{}
 
 // Config returns the configuration for MVM.
 func (o *RootOptions) Config() *config.Config {
+	home := os.Getenv("MVM")
+	if home == "" {
+		userHome, err := os.UserHomeDir()
+		if err != nil {
+			panic("user home directory not available")
+		}
+
+		home = filepath.Join(userHome, ".mvm")
+	}
+
 	return &config.Config{
-		Home: `C:\Users\craig\scoop\persist\mvm`,
+		Home: home,
 	}
 }
