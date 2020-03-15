@@ -7,7 +7,6 @@ import (
 
 	"github.com/craiggwilson/editline/pkg/editline"
 	"github.com/craiggwilson/mvm/pkg/version"
-	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 )
 
@@ -28,12 +27,13 @@ var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Lists the versions of mongodb available.",
 	PreRun: func(_ *cobra.Command, args []string) {
+		colors := listOpts.RootOptions.Colors()
 		listOpts.Out = editline.NewWriter(listOpts.Out,
 			editline.Prefix("o +", editline.EditorFunc(func(line string) (string, editline.Action) {
-				return aurora.BrightGreen(line).Bold().String(), editline.ReplaceAction
+				return colors.BrightGreen(line).Bold().String(), editline.ReplaceAction
 			})),
 			editline.Prefix("   ", editline.EditorFunc(func(line string) (string, editline.Action) {
-				return aurora.Yellow(line).Bold().String(), editline.ReplaceAction
+				return colors.Yellow(line).Bold().String(), editline.ReplaceAction
 			})),
 		)
 	},
