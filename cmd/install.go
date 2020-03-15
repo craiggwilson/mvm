@@ -9,7 +9,7 @@ import (
 )
 
 var installOpts = InstallOptions{
-	RootOptions: rootOpts,
+	RootOptions: &rootOpts,
 }
 
 func init() {
@@ -31,7 +31,7 @@ var installCmd = &cobra.Command{
 
 // InstallOptions are the options for installing a mongodb version.
 type InstallOptions struct {
-	RootOptions
+	*RootOptions
 
 	Development       bool
 	ReleaseCandidates bool

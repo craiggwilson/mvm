@@ -15,7 +15,7 @@ import (
 )
 
 var runOpts = RunOptions{
-	RootOptions: rootOpts,
+	RootOptions: &rootOpts,
 	Out:         os.Stdout,
 	Err:         os.Stderr,
 	In:          os.Stdin,
@@ -42,7 +42,7 @@ var runCmd = &cobra.Command{
 
 // RunOptions are the options for running a mongodb binary.
 type RunOptions struct {
-	RootOptions
+	*RootOptions
 
 	Binary string
 	Args   []string

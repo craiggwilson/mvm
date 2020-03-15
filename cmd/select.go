@@ -6,7 +6,7 @@ import (
 )
 
 var selectOpts = SelectOptions{
-	RootOptions: rootOpts,
+	RootOptions: &rootOpts,
 }
 
 func init() {
@@ -25,7 +25,7 @@ var selectCmd = &cobra.Command{
 
 // SelectOptions are the options for selecting a mongodb version.
 type SelectOptions struct {
-	RootOptions
+	*RootOptions
 
 	Version string
 }

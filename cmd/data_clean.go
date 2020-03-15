@@ -10,7 +10,7 @@ import (
 )
 
 var dataCleanOpts = DataCleanOptions{
-	RootOptions: rootOpts,
+	RootOptions: &rootOpts,
 }
 
 func init() {
@@ -31,7 +31,7 @@ var dataCleanCmd = &cobra.Command{
 
 // DataCleanOptions are the options for cleaning a data directory.
 type DataCleanOptions struct {
-	RootOptions
+	*RootOptions
 
 	Version string
 	Port    string

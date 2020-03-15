@@ -8,7 +8,7 @@ import (
 )
 
 var uninstallOpts = UninstallOptions{
-	RootOptions: rootOpts,
+	RootOptions: &rootOpts,
 }
 
 func init() {
@@ -27,7 +27,7 @@ var uninstallCmd = &cobra.Command{
 
 // UninstallOptions are the options for uninstalling a mongodb version.
 type UninstallOptions struct {
-	RootOptions
+	*RootOptions
 
 	Version string
 }

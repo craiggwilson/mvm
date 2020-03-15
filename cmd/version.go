@@ -16,7 +16,7 @@ var gitVersion string = "no-git-version"
 var versionDate string = "no date"
 
 var versionOpts = VersionOptions{
-	RootOptions: rootOpts,
+	RootOptions: &rootOpts,
 	Out:         os.Stdout,
 }
 
@@ -34,7 +34,7 @@ var versionCmd = &cobra.Command{
 
 // VersionOptions are the options for selecting a mongodb version.
 type VersionOptions struct {
-	RootOptions
+	*RootOptions
 
 	Out io.Writer
 }

@@ -30,26 +30,23 @@ var rootCmd = &cobra.Command{
 		log.SetFlags(0)
 		output := io.Writer(os.Stderr)
 
-		verbose, _ := cmd.Flags().GetBool("verbose")
-
 		editors := []editline.Editor{
 			editline.Prefix("[info] ", editline.EditorFunc(func(line string) (string, editline.Action) {
-				return aurora.Cyan(line[7:]).String(), editline.ReplaceAction
+				return line[7:], editline.ReplaceAction
 			})),
 			editline.Prefix("[verbose] ", editline.EditorFunc(func(line string) (string, editline.Action) {
-				if !verbose {
+				if !rootOpts.Verbose {
 					return "", editline.RemoveAction
 				}
 
-				return aurora.Green(line[10:]).String(), editline.ReplaceAction
+				return aurora.Cyan(line[10:]).String(), editline.ReplaceAction
 			})),
 		}
 
 		log.SetOutput(editline.NewWriter(output, editors...))
 	},
 	PersistentPostRun: func(cmd *cobra.Command, args []string) {
-		w := log.Writer().(*editline.Writer)
-		_ = w.Flush()
+		_ = log.Writer().(*editline.Writer).Flush()
 	},
 }
 

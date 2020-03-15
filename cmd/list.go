@@ -5,12 +5,14 @@ import (
 	"io"
 	"os"
 
+	"github.com/craiggwilson/editline/pkg/editline"
 	"github.com/craiggwilson/mvm/pkg/version"
+	"github.com/logrusorgru/aurora"
 	"github.com/spf13/cobra"
 )
 
 var listOpts = ListOptions{
-	RootOptions: rootOpts,
+	RootOptions: &rootOpts,
 	Out:         os.Stdout,
 }
 
@@ -18,7 +20,6 @@ func init() {
 	listCmd.Flags().BoolVarP(&listOpts.Remote, "remote", "r", false, "include remote versions that haven't been downloaded")
 	listCmd.Flags().BoolVarP(&listOpts.Development, "development", "d", false, "include development versions")
 	listCmd.Flags().BoolVarP(&listOpts.ReleaseCandidates, "releaseCandidates", "c", false, "include release candidates")
-	listCmd.Flags().BoolVarP(&listOpts.Verbose, "verbose", "v", false, "turns on verbose logging")
 
 	rootCmd.AddCommand(listCmd)
 }
@@ -26,19 +27,31 @@ func init() {
 var listCmd = &cobra.Command{
 	Use:   "list",
 	Short: "Lists the versions of mongodb available.",
+	PreRun: func(_ *cobra.Command, args []string) {
+		listOpts.Out = editline.NewWriter(listOpts.Out,
+			editline.Prefix("o +", editline.EditorFunc(func(line string) (string, editline.Action) {
+				return aurora.BrightGreen(line).Bold().String(), editline.ReplaceAction
+			})),
+			editline.Prefix("   ", editline.EditorFunc(func(line string) (string, editline.Action) {
+				return aurora.Yellow(line).Bold().String(), editline.ReplaceAction
+			})),
+		)
+	},
 	RunE: func(_ *cobra.Command, args []string) error {
 		return List(listOpts)
+	},
+	PostRun: func(_ *cobra.Command, args []string) {
+		_ = listOpts.Out.(*editline.Writer).Flush()
 	},
 }
 
 // ListOptions are the options for listing versions.
 type ListOptions struct {
-	RootOptions
+	*RootOptions
 
 	Remote            bool
 	Development       bool
 	ReleaseCandidates bool
-	Verbose           bool
 
 	Out io.Writer
 }
@@ -70,10 +83,10 @@ func List(opts ListOptions) error {
 		}
 		path := ""
 		if opts.Verbose {
-			path = " " + v.URI
+			path = v.URI
 		}
 
-		fmt.Fprintf(opts.Out, "%s %s %s %s\n", activeFlag, installedFlag, v.Version.String(), path)
+		fmt.Fprintf(opts.Out, "%s %s %-12s %s\n", activeFlag, installedFlag, v.Version.String(), path)
 	}
 
 	return nil

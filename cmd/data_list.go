@@ -14,7 +14,7 @@ import (
 )
 
 var dataListOpts = DataListOptions{
-	RootOptions: rootOpts,
+	RootOptions: &rootOpts,
 	Out:         os.Stdout,
 }
 
@@ -32,7 +32,7 @@ var dataListCmd = &cobra.Command{
 
 // CleanOptions are the options for cleaning a data directory.
 type DataListOptions struct {
-	RootOptions
+	*RootOptions
 	Out io.Writer
 }
 

@@ -33,7 +33,7 @@ func download(checksum, source, dest string) (string, error) {
 	for {
 		select {
 		case <-t.C:
-			log.Printf("[info]  transferred %v / %v bytes (%.2f%%)\n",
+			log.Printf("[info] transferred %v / %v bytes (%.2f%%)\n",
 				resp.BytesComplete(),
 				resp.Size,
 				100*resp.Progress())
