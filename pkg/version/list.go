@@ -80,7 +80,7 @@ func ListInstalled(cfg *config.Config) ([]*Version, error) {
 	}
 
 	activeVersion, err := Active(cfg)
-	if err != nil && !errors.Is(err, ErrNoActiveVersion) {
+	if err != nil && !errors.Is(err, os.ErrNotExist) && !errors.Is(err, ErrNoActiveVersion) {
 		return nil, fmt.Errorf("failed getting active version: %w", err)
 	}
 
@@ -101,7 +101,7 @@ func ListInstalled(cfg *config.Config) ([]*Version, error) {
 			continue
 		}
 
-		if v.URI == activeVersion.URI {
+		if activeVersion != nil && v.URI == activeVersion.URI {
 			v.Active = true
 		}
 

@@ -1,7 +1,6 @@
 package config
 
 import (
-	"os"
 	"path/filepath"
 )
 
@@ -12,13 +11,7 @@ type Config struct {
 
 // ActivePath returns the path to the active version.
 func (c *Config) ActivePath() string {
-	path := filepath.Join(c.Home, "active")
-	_, err := os.Stat(path)
-	if err != nil {
-		return ""
-	}
-
-	return path
+	return filepath.Join(c.Home, "active")
 }
 
 // DataPath returns the path to the data for a version running on the specified port.
